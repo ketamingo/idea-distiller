@@ -72,7 +72,55 @@ const SAMPLE_IDEAS = [
   "Finding the 'best' version of a non-tech product (like a spoon) is surprisingly hard.",
   "I want to see the world from the perspective of a cat for 5 minutes.",
   "I wish my coffee maker knew how tired I was based on my calendar.",
-  "There's no easy way to find 'boring' business ideas that actually make money."
+  "There's no easy way to find 'boring' business ideas that actually make money.",
+  "I hate that I can't search through my physical notebooks like a PDF.",
+  "I wish I could pay someone to just stand in line for me at the post office.",
+  "I want to know which books on my shelf I've neglected for more than two years.",
+  "There's no tool to help me plan a meal based on a specific 'color palette'.",
+  "I wish I could 'mute' specific recurring noises in my apartment (like the fridge).",
+  "I hate that I can't easily see the history of a second-hand item before I buy it.",
+  "I want to find a group of people to rent a private island for exactly 48 hours.",
+  "I wish my car would tell me the 'real' cost of a trip including depreciation.",
+  "There's no way to easily trade 10 minutes of my expert time for 10 minutes of yours.",
+  "I want a service that sends me a physical polaroid of a random place every week.",
+  "I hate that I can't remember the name of that one person I met at a wedding in 2012.",
+  "I wish I could see a heatmap of where people actually spend time in a museum.",
+  "I want to buy a 'mystery key' that opens a random locker somewhere in the city.",
+  "I hate that my smartphone feels too 'loud' even when it's on silent.",
+  "I wish I could find a 5-minute documentary about literally anything right now.",
+  "There's no marketplace for 'extremely specific' tools like a left-handed offset spatula.",
+  "I want to know the 'carbon footprint' of every email I send.",
+  "I wish I could swap my commute for a random 30-minute walk in a different city.",
+  "I hate that I can't easily find a place to play 1v1 tetris for money in person.",
+  "I want to subscribe to 'serendipity'—a service that sends me on a random date with a stranger.",
+  "I wish I could see the 'hidden history' of the street I'm standing on via AR.",
+  "I hate that I have 20 loyalty cards and they all take up room in my wallet.",
+  "I want a tool that helps me write a novel exactly 10 words at a time.",
+  "I wish I could easily find the 'quietest' 1% of a city at any given moment.",
+  "There's no app for 'intentional boredom'—it just blocks everything for 20 minutes.",
+  "I want to see what my room would look like if it was designed by a movie director.",
+  "I hate that I can't easily tip the person who actually made my sandwich.",
+  "I wish I could find a 'mentor for a day' without a long-term commitment.",
+  "I want a way to record the smell of a place and save it for later.",
+  "I hate that I can't easily see which of my friends are in the same building as me.",
+  "I wish my phone would only unlock if I could remember a specific fact I learned today.",
+  "There's no service for 'anti-recommendations'—tell me what I'll definitely hate.",
+  "I want to find the 'cheapest' way to feel like a millionaire for 15 minutes.",
+  "I hate that I can't easily see the 'energy level' of a bar before walking in.",
+  "I wish I could buy a 'time capsule' that only opens when I reach a certain goal.",
+  "I want to see the world through the eyes of someone 2 feet taller than me.",
+  "I hate that I can't easily find a place to fix a broken zipper in under 10 minutes.",
+  "I wish I could 'rent' a dog for a 30-minute walk in the park.",
+  "There's no way to easily see which of my clothes no longer fit my 'vibe'.",
+  "I want a service that organizes 'dinner for strangers' in private homes.",
+  "I hate that I can't easily find a place to record a podcast in a library.",
+  "I wish I could see which of my neighbors are also awake at 3 AM.",
+  "I want to buy a 'blind box' of artisanal groceries with no labels.",
+  "I hate that I can't easily find a place to take a shower in a city for $5.",
+  "I wish I could see the 'difficulty level' of a recipe before reading it.",
+  "I want to find a group of people to start a 'secret society' with for one week.",
+  "I hate that I can't easily find a place to do 'low-stakes' woodworking.",
+  "I wish I could find a 'ghostwriter' for my texts when I'm feeling socially anxious."
 ];
 
 export default function HomePage() {
@@ -89,10 +137,10 @@ export default function HomePage() {
       try {
         const res = await fetch("/api/samples");
         const data = await res.json();
-        if (data.recent && Array.isArray(data.recent)) {
+        if (data.randomFromPool && Array.isArray(data.randomFromPool)) {
           // Add any new unique samples to our state
           setDynamicSamples(prev => {
-            const combined = [...new Set([...prev, ...data.recent])];
+            const combined = [...new Set([...prev, ...data.randomFromPool])];
             return combined;
           });
         }
