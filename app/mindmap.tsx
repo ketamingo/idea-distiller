@@ -29,7 +29,7 @@ const nodeDefaults = {
 };
 
 // Custom node component with tooltip
-function CustomNode({ data }: NodeProps) {
+function CustomNode({ data }: { data: any }) {
     return (
         <div
             style={{
