@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Lightbulb,
   Users,
@@ -75,11 +75,29 @@ export default function HomePage() {
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<"simple" | "pro" | "executive">("simple");
   const [ideaHistory, setIdeaHistory] = useState<IdeaNode[]>([]);
+  const [dynamicSamples, setDynamicSamples] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Fetch a new unique sample on every visit to "grow" the database
+  useEffect(() => {
+    const fetchNewSample = async () => {
+      try {
+        const res = await fetch("/api/samples");
+        const data = await res.json();
+        if (data.sample) {
+          setDynamicSamples(prev => [...prev, data.sample]);
+        }
+      } catch (e) {
+        console.error("Failed to fetch dynamic sample", e);
+      }
+    };
+    fetchNewSample();
+  }, []);
+
   const handleRandomize = () => {
-    const randomIdea = SAMPLE_IDEAS[Math.floor(Math.random() * SAMPLE_IDEAS.length)];
+    const allSamples = [...SAMPLE_IDEAS, ...dynamicSamples];
+    const randomIdea = allSamples[Math.floor(Math.random() * allSamples.length)];
     setInput(randomIdea);
   };
 
