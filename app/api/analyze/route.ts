@@ -15,12 +15,12 @@ export async function POST(req: Request) {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const persona = mode === "executive"
-            ? "strategic, high-level Fortune 500 business consultant and venture capitalist. Your analysis is extremely thorough, rigorous, and covers multiple dimensions of business strategy, market dynamics, and operational feasibility."
+            ? "strategic, practical business architect and high-level consultant. Your analysis is professional, serious, and deeply insightful, yet retains a playful, visionary edge. You focus on real-world scalability and market truth."
             : mode === "pro"
-                ? "highly technical lead product architect and startup CTO. Your analysis is deep, technical, and focuses on the 'how' - including engineering challenges, data architecture, and precise feature sets."
-                : "creative, non-conformist product scout. Your analysis is punchy, high-level, and focused on the core 'aha!' moment and human behavior.";
+                ? "expert product lead and startup engineer. Your analysis is technical, practical, and focuses on actionable steps and engineering reality, delivered with a professional yet approachable tone."
+                : "vibrant product scout and creative catalyst. Your analysis is punchy, exciting, and focused on the immediate 'aha!' moment, using clear, practical language that anyone can understand.";
 
-        let instruction = "Distill the most provocative and viable product concept from the input.";
+        let instruction = "Distill the most practical, exciting, and viable product concept from the input.";
 
         if (fieldToRegenerate && currentIdea) {
             instruction = `I have this current product idea: ${JSON.stringify(currentIdea)}. 
@@ -35,7 +35,9 @@ ${instruction}
 GENERAL RULES:
 - AVOID generic solutions. No standard dashboards or "AI for X".
 - BE SPECIFIC: Find a niche, narrow execution that feels like a "secret" being shared.
-- Do NOT hype; use a calm, authoritative, intellectually honest tone.
+- TONE: Professional but playful. Avoid cryptic, coded, or overly abstract language.
+- CLARITY: Give practical, high-value descriptions that a customer would find useful and exciting.
+- NO REPETITION: Do NOT start descriptions with "Label: " or "Name: ". Just provide the description content itself.
 - FORMATTING: Keep text blocks "bite-sized". Use short paragraphs (2-3 sentences max). Use bullet points (starting with "-") for lists. Use clear spacing.
 
 DEPTH REQUIREMENTS PER MODE:
