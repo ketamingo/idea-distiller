@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo } from 'react';
-import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, MarkerType } from '@xyflow/react';
+import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, MarkerType, NodeProps } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 interface IdeaNode {
@@ -28,6 +28,35 @@ const nodeDefaults = {
     }
 };
 
+// Custom node component with tooltip
+function CustomNode({ data }: NodeProps) {
+    return (
+        <div
+            style={{
+                padding: '12px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                textAlign: 'center',
+                position: 'relative'
+            }}
+            title={data.tooltip || ''}
+        >
+            <div style={{ fontWeight: data.tooltip ? 'bold' : 'normal' }}>
+                {data.label}
+            </div>
+            {data.desc && (
+                <div style={{ fontSize: '11px', marginTop: '4px', opacity: 0.7 }}>
+                    {data.desc}
+                </div>
+            )}
+        </div>
+    );
+}
+
+const nodeTypes = {
+    custom: CustomNode,
+};
+
 export default function MindMap({
     history,
     onPivot
@@ -43,7 +72,6 @@ export default function MindMap({
         // Build tree structure
         history.forEach((idea, index) => {
             const level = history.filter(h => {
-                // Count how many ancestors this node has
                 let current = idea;
                 let depth = 0;
                 while (current.parentId) {
@@ -57,7 +85,6 @@ export default function MindMap({
             const yPosition = index * 150;
             const xPosition = level * 400;
 
-            // Add idea node
             nodes.push({
                 id: idea.id,
                 position: { x: xPosition, y: yPosition },
@@ -72,7 +99,6 @@ export default function MindMap({
                 }
             });
 
-            // Add edge from parent if exists
             if (idea.parentId) {
                 edges.push({
                     id: `e-${idea.parentId}-${idea.id}`,
@@ -91,7 +117,6 @@ export default function MindMap({
             }
         });
 
-        // Add pivot nodes for the most recent idea
         const latestIdea = history[history.length - 1];
         if (latestIdea && latestIdea.pivots) {
             latestIdea.pivots.forEach((pivot, i) => {
@@ -99,13 +124,21 @@ export default function MindMap({
                 const latestNode = nodes.find(n => n.id === latestIdea.id);
 
                 if (latestNode) {
+                    const promptPreview = `Better version: ${pivot.label} - ${pivot.description}`;
+
                     nodes.push({
                         id: pivotId,
                         position: {
                             x: latestNode.position.x + 350,
                             y: latestNode.position.y + (i - latestIdea.pivots.length / 2) * 120
                         },
-                        data: { label: pivot.label, desc: pivot.description, parentId: latestIdea.id },
+                        data: {
+                            label: pivot.label,
+                            desc: pivot.description,
+                            parentId: latestIdea.id,
+                            tooltip: promptPreview.length > 60 ? promptPreview.substring(0, 57) + '...' : promptPreview
+                        },
+                        type: 'custom',
                         style: {
                             ...nodeDefaults.style,
                             cursor: 'pointer',
@@ -133,7 +166,6 @@ export default function MindMap({
     const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
 
-    // Update nodes when history changes
     React.useEffect(() => {
         setNodes(layoutNodes);
         setEdges(layoutEdges);
@@ -151,6 +183,7 @@ export default function MindMap({
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
+                nodeTypes={nodeTypes}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onNodeClick={onNodeClick}
