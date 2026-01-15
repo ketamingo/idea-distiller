@@ -194,7 +194,7 @@ export default function HomePage() {
         )}
 
         <footer className="mt-24 text-slate-600 text-sm py-6 border-t border-slate-900 w-full text-center">
-          Built with Gemini 2.5 • Antigravity
+          built for people with too many ideas
         </footer>
       </div>
     </div>
