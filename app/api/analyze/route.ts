@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Simple API route (Next.js App Router)
 export async function POST(req: Request) {
     try {
-        const { input, mode = "simple" } = await req.json();
+        const { input, mode = "simple", fieldToRegenerate, currentIdea } = await req.json();
 
         if (!input || input.trim() === "") {
             return NextResponse.json({ error: "Input text is required" }, { status: 400 });
@@ -20,10 +20,17 @@ export async function POST(req: Request) {
                 ? "highly technical, hands-on product architect. focus on implementation details, tech stacks, and edge cases."
                 : "brilliant, non-conformist product strategist. focus on unique insights and creative, human-scale solutions.";
 
+        let instruction = "Extract the most unique, high-signal product idea hiding inside a vague thought.";
+
+        if (fieldToRegenerate && currentIdea) {
+            instruction = `I have this current product idea: ${JSON.stringify(currentIdea)}. 
+            Please REGENERATE ONLY the "${fieldToRegenerate}" field. Make it significantly DIFFERENT and more interesting/radical than the current one, but keep it consistent with the rest of the idea.`;
+        }
+
         const prompt = `
 You are a ${persona}
 
-Extract the most unique, high-signal product idea hiding inside a vague thought.
+${instruction}
 
 Rules:
 - AVOID generic solutions (no "AI summaries", "standard dashboards", or "generalized productivity apps").
