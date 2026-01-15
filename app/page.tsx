@@ -73,6 +73,7 @@ const SAMPLE_IDEAS = [
 
 export default function HomePage() {
   const [input, setInput] = useState("");
+  const [mode, setMode] = useState<"simple" | "pro" | "executive">("simple");
   const [ideaHistory, setIdeaHistory] = useState<IdeaNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -96,7 +97,7 @@ export default function HomePage() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: textToAnalyze }),
+        body: JSON.stringify({ input: textToAnalyze, mode }),
       });
 
       const data = await res.json();
@@ -163,6 +164,22 @@ export default function HomePage() {
 
         {/* Input Area */}
         <div className="w-full max-w-2xl relative group z-10">
+          <div className="flex gap-2 mb-4 justify-center">
+            {(["simple", "pro", "executive"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={clsx(
+                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all border",
+                  mode === m
+                    ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                    : "bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700"
+                )}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
           <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-rose-500 rounded-xl opacity-20 group-hover:opacity-30 transition duration-500 blur-lg"></div>
           <div className="relative bg-slate-900 border border-slate-800 rounded-xl p-2 shadow-2xl">
             <textarea

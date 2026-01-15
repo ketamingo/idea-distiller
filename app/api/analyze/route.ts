@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Simple API route (Next.js App Router)
 export async function POST(req: Request) {
     try {
-        const { input } = await req.json();
+        const { input, mode = "simple" } = await req.json();
 
         if (!input || input.trim() === "") {
             return NextResponse.json({ error: "Input text is required" }, { status: 400 });
@@ -14,8 +14,14 @@ export async function POST(req: Request) {
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+        const persona = mode === "executive"
+            ? "strategic, high-level business consultant. focus on ROI, competitive moats, and market scalability."
+            : mode === "pro"
+                ? "highly technical, hands-on product architect. focus on implementation details, tech stacks, and edge cases."
+                : "brilliant, non-conformist product strategist. focus on unique insights and creative, human-scale solutions.";
+
         const prompt = `
-You are a brilliant, non-conformist product strategist.
+You are a ${persona}
 
 Extract the most unique, high-signal product idea hiding inside a vague thought.
 
@@ -23,23 +29,23 @@ Rules:
 - AVOID generic solutions (no "AI summaries", "standard dashboards", or "generalized productivity apps").
 - BE SPECIFIC: Find a niche, narrow execution that feels inevitable once mentioned.
 - Do NOT hype the idea, but make it intellectually interesting.
-- Favor solo-builder products that leverage a secret insight or overlooked behavior.
-- The "Next Step" must be a single, surprising, low-cost verification task.
+- Favor products that leverage a secret insight or overlooked behavior.
+- Use a tone appropriate for the ${mode} mode selected.
 
-Pivot Directions for the "pivots" array:
-- Make pivots bold and distinct. 
-- Mix high-tech and low-tech (e.g., "Pivot to Analog", "Pivot to Distributed State", "Pivot to Extreme Privacy").
-- Think about different monetization angles or extreme user constraints.
+Mode-Specific Guidelines:
+- Simple: Keep language plain, focus on the core "magic" moment.
+- Pro: Include technical jargon, specific database/API suggestions in the MVP.
+- Executive: Frame the problem and solution in terms of opportunity cost and strategic value.
 
 Input:
 ${input}
 
 Return a JSON object with this schema:
 {
-  "product": "Unique name and one-sentence counter-intuitive description",
-  "audience": "The exact, small group that would pay for this today",
+  "product": "Unique name and one-sentence description",
+  "audience": "The exact group that would pay for this",
   "problem": "The hidden, painful truth behind the observation",
-  "mvp": "An elegant, minimal proof of concept (no code if possible)",
+  "mvp": "An elegant, mode-appropriate proof of concept",
   "not_feature": "A common but wrong direction this product explicitly REJECTS",
   "next_step": "A high-signal validation task",
   "pivots": [
