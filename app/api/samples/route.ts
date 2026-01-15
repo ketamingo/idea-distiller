@@ -17,13 +17,14 @@ Rules:
 - One sentence only.
 - First-person perspective ("I wish...", "I hate...", "There's no way to...").
 - AVOID cliches (no "lost keys", "water plants", or "AI aggregators").
-- Focus on weird, niche, or overlooked moments in modern life, design, fashion, or hardware.
-- Be specific, evocative, and slightly poetic.
+- VARY THE THEME: Pick a random theme each time (e.g., "Architecture", "Fine Dining", "Space Travel", "Obsolete Technology", "Cyber-security", "Street Art", "Quietness", "Legacy Hardware").
+- Focus on weird, niche, or overlooked moments in modern life or work.
+- Be specific and evocative.
 
 Examples:
-- "I have too many cool stickers and I'm afraid to use them because it feels permanent."
-- "I wish my clothes would tell me how many times I've actually worn them so I could donate the clutter."
-- "I want to hear the ambient sound of various cities around the world as my white noise."
+- "I wish my desk would tell me if the floor under it is perfectly level without me needing a bubble level."
+- "I hate that I can't easily find a recording of the specific forest I visited 5 years ago to help me sleep."
+- "There is no 'Shazam' for physical textures like moss or coarse concrete when I'm scouting movie locations."
 
 Just return the raw text of the sentence, nothing else.
 `;
@@ -46,4 +47,3 @@ Just return the raw text of the sentence, nothing else.
         return NextResponse.json({ error: "Failed to generate" }, { status: 500 });
     }
 }
-

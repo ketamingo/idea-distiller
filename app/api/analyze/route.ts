@@ -37,6 +37,9 @@ Mode-Specific Guidelines:
 - Pro: Include technical jargon, specific database/API suggestions in the MVP.
 - Executive: Frame the problem and solution in terms of opportunity cost and strategic value.
 
+Pivot Variety:
+Provide 4 distinct paths. Ensure one is "Analog/Physical", one is "Hyper-Niche", one is "Luxury/Premium", and one is "Viral/Social". 
+
 Input:
 ${input}
 
