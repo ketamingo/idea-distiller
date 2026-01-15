@@ -48,7 +48,27 @@ const SAMPLE_IDEAS = [
   "Extracting data from PDFs is a nightmare every single time.",
   "I want to track how many hours of deep sleep I get without wearing a watch.",
   "Setting up a personal blog takes too much technical configuration.",
-  "I wish I could easily see which ingredients in my pantry are about to expire."
+  "I wish I could easily see which ingredients in my pantry are about to expire.",
+  "I have 50 tabs open of articles I'll never read.",
+  "There's no easy way to gift a 'day of work' to a freelancer friend.",
+  "Every time I hear a cool bird I wish I knew what it was without pulling out my phone.",
+  "I want a way to track the 'vibe' of local cafes without reading 100 Yelp reviews.",
+  "Managing subscriptions is basically a second full-time job at this point.",
+  "I wish my kitchen scale would automatically log calories to my phone.",
+  "There's no 'Shazam' for physical textures or fabrics.",
+  "I hate that I can't easily find out if a movie has jump scares before watching.",
+  "I want to swap houseplants with neighbors but don't want to use Facebook.",
+  "Finding a reliable 10-minute workout that actually builds muscle is confusing.",
+  "I wish I could 'undo' a sent physical postcard.",
+  "Why is it so hard to find a quiet place to take a 15-minute nap in the city?",
+  "I have too many cool stickers and I'm afraid to use them.",
+  "I want to listen to local radio in distant cities while I drive.",
+  "There's no app for 'anti-bucket list' items I've already realized I hate.",
+  "I wish my clothes would tell me how many times I've actually worn them.",
+  "Finding the 'best' version of a non-tech product (like a spoon) is surprisingly hard.",
+  "I want to see the world from the perspective of a cat for 5 minutes.",
+  "I wish my coffee maker knew how tired I was based on my calendar.",
+  "There's no easy way to find 'boring' business ideas that actually make money."
 ];
 
 export default function HomePage() {
