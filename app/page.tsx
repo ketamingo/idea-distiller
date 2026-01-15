@@ -169,7 +169,31 @@ const SAMPLE_IDEAS = [
   "I hate that I can't easily find a place to practice 'professional' tree climbing.",
   "I wish I could 'rent' an expert to just sit next to me while I try to fix my sink.",
   "There's no app for 'intentional failure'—it sets goals that are impossible just for fun.",
-  "I want to see the 'vibe' of a hotel room via VR before I actually check in."
+  "I want to see the 'vibe' of a hotel room via VR before I actually check in.",
+  "I hate that I can't easily find a place to fix a broken solar panel by myself.",
+  "I wish I could join a 'temporary commune' for exactly 72 hours.",
+  "I want to track how many 'micro-decisions' I make in a typical workday.",
+  "There's no app for 'anti-optimization'—it suggests the least efficient but most scenic route.",
+  "I wish I could find a 'professional listener' who will only speak in riddles.",
+  "I hate that I can't easily see the 'social history' of a park bench.",
+  "I want to subscribe to 'analog news'—a weekly physical newspaper of only good news.",
+  "I wish my coffee cup would tell me the 'ethical score' of the beans inside.",
+  "I want to swap 'unused subscription time' with people who actually need it.",
+  "There's no marketplace for 'extremely specific' sounds like '1990s Dial-up' or 'Dry Leaves'.",
+  "I wish I could see the 'wind path' through my city for every hour of the day.",
+  "I hate that I can't easily find a place to fix a broken record player.",
+  "I want to buy a 'mystery box' of plant seeds from a random continent.",
+  "I wish my phone would only unlock if I could correctly identify a nearby bird call.",
+  "I hate that I can't easily see the 'carbon debt' of my favorite restaurant.",
+  "I want to find a service that organizes 'silent discos' in abandoned spaces.",
+  "I wish I could find a 'mentor' who only communicates through interpretative dance.",
+  "I want to track how many times I've actually laughed out loud today.",
+  "There's no app for 'intentional confusion'—it swaps all your app icons for 10 minutes.",
+  "I wish I could see the 'geological history' of the rock I'm standing on.",
+  "I hate that I can't easily find a place to fix a broken typewriter.",
+  "I want to buy a 'mystery ticket' that puts me on a random bus for 2 hours.",
+  "I wish my desk would buzz if I've been 'staring into space' for too long.",
+  "I want to swap 'useless facts' with people to see who knows the most obscure trivia."
 ];
 
 export default function HomePage() {
