@@ -26,11 +26,12 @@ Rules:
 - Do NOT suggest complex features.
 - Favor small, focused, human-scale products.
 - Assume the builder is a solo person.
+- Simplify the "Next Step" to be a single, actionable task.
 
 Input:
 ${input}
 
-Output strictly in valid JSON format with these keys:
+Return a JSON object with this schema:
 {
   "product": "Name and one-sentence description",
   "audience": "Who It’s For",
@@ -39,16 +40,15 @@ Output strictly in valid JSON format with these keys:
   "not_feature": "What This Is Not",
   "next_step": "A Realistic Next Step",
   "pivots": [
-    { "label": "B2B", "description": "How this works for businesses" },
-    { "label": "Community", "description": "How to make this social" },
-    { "label": "Micro", "description": "An even simpler version" },
-    { "label": "Premium", "description": "A luxury/high-end version" }
+    { "label": "Short Label", "description": "Description" }
   ]
 }
-Do not use Markdown formatting (like json code blocks), just return the raw JSON string.
 `;
 
-        const result = await model.generateContent(prompt);
+        const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" },
+        });
         const text = result.response.text();
 
         return NextResponse.json({ result: text });
