@@ -6,7 +6,13 @@ import '@xyflow/react/dist/style.css';
 
 interface IdeaNode {
     id: string;
-    product: string;
+    name: string;
+    description: string;
+    audience: string;
+    problem: string;
+    mvp: string;
+    not_feature: string;
+    next_step: string;
     pivots: { label: string; description: string }[];
     parentId?: string;
     prompt: string;
@@ -88,7 +94,7 @@ export default function MindMap({
             nodes.push({
                 id: idea.id,
                 position: { x: xPosition, y: yPosition },
-                data: { label: idea.product.substring(0, 50) + (idea.product.length > 50 ? '...' : '') },
+                data: { label: idea.name.substring(0, 50) + (idea.name.length > 50 ? '...' : '') },
                 type: index === 0 ? 'input' : 'default',
                 style: {
                     ...nodeDefaults.style,

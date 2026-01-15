@@ -36,18 +36,20 @@ GENERAL RULES:
 - AVOID generic solutions. No standard dashboards or "AI for X".
 - BE SPECIFIC: Find a niche, narrow execution that feels like a "secret" being shared.
 - Do NOT hype; use a calm, authoritative, intellectually honest tone.
+- FORMATTING: Keep text blocks "bite-sized". Use short paragraphs (2-3 sentences max). Use bullet points (starting with "-") for lists. Use clear spacing.
 
 DEPTH REQUIREMENTS PER MODE:
 - Mode "simple": Provide high-level, concise snippets. Each field should be 1-2 powerful sentences max. Focus on clarity.
 - Mode "pro": Provide significantly more depth (3-5 sentences per field). Include specific technical terminology, stack suggestions, and edge-case considerations.
-- Mode "executive": Provide MAXIMUM depth and rigor. Each field should be a detailed paragraph (6-10 sentences). Analyze market defensibility, ROI potential, scalability friction, and strategic alignment. This should feel like a deep-dive briefing.
+- Mode "executive": Provide MAXIMUM depth and rigor. Each field should be a detailed paragraph (6-10 sentences). Analyze market defensibility, ROI potential, scalability friction, and strategic alignment. 
 
 Input Thought:
 "${input}"
 
 Return a JSON object with this schema:
 {
-  "product": "Unique name and mode-appropriate description (brief for simple, detailed for others)",
+  "name": "A short, punchy product name (2-4 words)",
+  "description": "A mode-appropriate overview of the product concept",
   "audience": "Description of the exact niche or persona",
   "problem": "Deep analysis of the underlying pain point",
   "mvp": "Specific, mode-appropriate proof of concept details",
