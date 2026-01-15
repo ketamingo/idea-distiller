@@ -9,7 +9,8 @@ import {
   XCircle,
   ArrowRight,
   Sparkles,
-  Loader2
+  Loader2,
+  Dices
 } from "lucide-react";
 import clsx from "clsx";
 import MindMap from "./mindmap";
@@ -37,11 +38,29 @@ interface IdeaNode {
   prompt: string;
 }
 
+const SAMPLE_IDEAS = [
+  "I hate correcting typos in my git commit messages.",
+  "I constantly forget to water my plants and they keep dying.",
+  "I wish I could find all the specific tools I used for a DIY project in one receipt.",
+  "Finding a good spot for stargazing without light pollution is impossible.",
+  "I always lose my physical gym membership card but carrying it is annoying.",
+  "I struggle to find healthy lunch spots within walking distance of my office.",
+  "Extracting data from PDFs is a nightmare every single time.",
+  "I want to track how many hours of deep sleep I get without wearing a watch.",
+  "Setting up a personal blog takes too much technical configuration.",
+  "I wish I could easily see which ingredients in my pantry are about to expire."
+];
+
 export default function HomePage() {
   const [input, setInput] = useState("");
   const [ideaHistory, setIdeaHistory] = useState<IdeaNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handleRandomize = () => {
+    const randomIdea = SAMPLE_IDEAS[Math.floor(Math.random() * SAMPLE_IDEAS.length)];
+    setInput(randomIdea);
+  };
 
   const handleAnalyze = async (overrideInput?: string, parentId?: string) => {
     const textToAnalyze = (typeof overrideInput === 'string' && overrideInput)
@@ -136,14 +155,24 @@ export default function HomePage() {
               <span className="text-xs text-slate-600">
                 {input.length > 0 ? `${input.length} chars` : "Paste your thought"}
               </span>
-              <button
-                onClick={() => handleAnalyze()}
-                disabled={loading || !input.trim()}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
-              >
-                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-                {loading ? "Distilling..." : "Analyze"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleRandomize}
+                  disabled={loading}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all transform active:scale-95 border border-slate-700"
+                  title="Random Idea"
+                >
+                  <Dices className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleAnalyze()}
+                  disabled={loading || !input.trim()}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-lg shadow-indigo-500/20"
+                >
+                  {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                  {loading ? "Distilling..." : "Analyze"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
