@@ -23,8 +23,11 @@ export async function POST(req: Request) {
         let instruction = "Distill the most practical, exciting, and viable product concept from the input.";
 
         if (fieldToRegenerate && currentIdea) {
+            const targetMode = mode === "simple" ? "concise and high-level (1-2 sentences)" : `detailed and technical (${mode} mode)`;
             instruction = `I have this current product idea: ${JSON.stringify(currentIdea)}. 
-            Please REGENERATE ONLY the "${fieldToRegenerate}" field. Keep it consistent with the overall concept but make it significantly more detailed and relevant to the selected ${mode} mode.`;
+            Please REGENERATE ONLY the "${fieldToRegenerate}" field. 
+            Keep it consistent with the overall concept but make it ${targetMode}. 
+            Focus on practical, actionable insights and avoid any filler or repeating the field label in the text.`;
         }
 
         const prompt = `
