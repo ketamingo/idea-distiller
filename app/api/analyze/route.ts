@@ -55,7 +55,7 @@ Return a JSON object with this schema:
     } catch (error) {
         console.error("AI call failed:", error);
         return NextResponse.json(
-            { error: "AI generation failed. Try again later." },
+            { error: `AI Error: ${(error as any)?.message || error}` },
             { status: 500 }
         );
     }
