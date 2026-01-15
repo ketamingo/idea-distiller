@@ -14,7 +14,7 @@ import {
 import clsx from "clsx";
 import MindMap from "./mindmap";
 
-interface analysisResult {
+interface AnalysisResult {
   product: string;
   audience: string;
   problem: string;
@@ -24,15 +24,26 @@ interface analysisResult {
   pivots: { label: string; description: string }[];
 }
 
+interface IdeaNode {
+  id: string;
+  product: string;
+  audience: string;
+  problem: string;
+  mvp: string;
+  not_feature: string;
+  next_step: string;
+  pivots: { label: string; description: string }[];
+  parentId?: string;
+  prompt: string;
+}
+
 export default function HomePage() {
   const [input, setInput] = useState("");
-  const [result, setResult] = useState<analysisResult | null>(null);
+  const [ideaHistory, setIdeaHistory] = useState<IdeaNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleAnalyze = async (overrideInput?: string) => {
-    // Determine which input to use: overrides take precedence, then state
-    // If it's an event (from button click), overrideInput is an object, so ignore it
+  const handleAnalyze = async (overrideInput?: string, parentId?: string) => {
     const textToAnalyze = (typeof overrideInput === 'string' && overrideInput)
       ? overrideInput
       : input;
@@ -40,8 +51,6 @@ export default function HomePage() {
     if (!textToAnalyze.trim()) return;
 
     setLoading(true);
-    // Don't clear result immediately if refining, but for now let's clear to show loading state clearly
-    // setResult(null); 
     setError("");
 
     try {
@@ -56,10 +65,17 @@ export default function HomePage() {
       if (res.ok) {
         try {
           const cleanJson = data.result.replace(/```json/g, "").replace(/```/g, "").trim();
-          const parsed = JSON.parse(cleanJson);
-          setResult(parsed);
+          const parsed: AnalysisResult = JSON.parse(cleanJson);
 
-          // If this was a refinement, update the input box to match what we analyzed
+          const newNode: IdeaNode = {
+            id: `node-${Date.now()}`,
+            ...parsed,
+            parentId,
+            prompt: textToAnalyze,
+          };
+
+          setIdeaHistory(prev => [...prev, newNode]);
+
           if (typeof overrideInput === 'string') {
             setInput(overrideInput);
           }
@@ -78,11 +94,12 @@ export default function HomePage() {
     }
   };
 
-  const handlePivot = useCallback((newPrompt: string) => {
-    handleAnalyze(newPrompt);
-    // Scroll to top smoothly to show loading/results
+  const handlePivot = useCallback((newPrompt: string, parentId: string) => {
+    handleAnalyze(newPrompt, parentId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  const currentResult = ideaHistory.length > 0 ? ideaHistory[ideaHistory.length - 1] : null;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30">
@@ -98,7 +115,7 @@ export default function HomePage() {
             <span className="text-xs font-medium text-slate-400 uppercase tracking-widest">Idea Distiller</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-br from-white to-slate-400 text-transparent bg-clip-text mb-4">
-            What’s the Product?
+            What's the Product?
           </h1>
           <p className="text-lg text-slate-400 leading-relaxed">
             Turn your frustrated observations into concrete, solo-founder-ready product concepts.
@@ -138,8 +155,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Results Grid */}
-        {result && (
+        {/* Results Grid - Show latest result */}
+        {currentResult && (
           <div className="w-full mt-20 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* 1. The Product (Featured) */}
@@ -152,7 +169,7 @@ export default function HomePage() {
                   <div>
                     <h2 className="text-sm font-semibold text-indigo-400 uppercase tracking-widest mb-1">The Product</h2>
                     <div className="text-3xl font-bold text-white leading-tight">
-                      {result.product}
+                      {currentResult.product}
                     </div>
                   </div>
                 </div>
@@ -165,7 +182,7 @@ export default function HomePage() {
                 color="text-blue-400"
                 bg="bg-blue-400/10"
               >
-                {result.audience}
+                {currentResult.audience}
               </Card>
 
               {/* 3. Problem */}
@@ -175,7 +192,7 @@ export default function HomePage() {
                 color="text-amber-400"
                 bg="bg-amber-400/10"
               >
-                {result.problem}
+                {currentResult.problem}
               </Card>
 
               {/* 4. MVP (Simple) */}
@@ -185,7 +202,7 @@ export default function HomePage() {
                 color="text-emerald-400"
                 bg="bg-emerald-400/10"
               >
-                {result.mvp}
+                {currentResult.mvp}
               </Card>
 
               {/* 5. Anti-Feature */}
@@ -195,7 +212,7 @@ export default function HomePage() {
                 color="text-rose-400"
                 bg="bg-rose-400/10"
               >
-                {result.not_feature}
+                {currentResult.not_feature}
               </Card>
 
               {/* 6. Next Step */}
@@ -206,18 +223,22 @@ export default function HomePage() {
                 bg="bg-slate-700/50"
                 className="md:col-span-2 lg:col-span-1 border-slate-600"
               >
-                {result.next_step}
+                {currentResult.next_step}
               </Card>
             </div>
 
-            {/* Mind Map for Pivots */}
-            {result.pivots && result.pivots.length > 0 && (
+            {/* Mind Map for Exploration History */}
+            {ideaHistory.length > 0 && (
               <div className="w-full mt-16 pt-16 border-t border-slate-900">
                 <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold mb-2 text-indigo-400">Explore Pivots</h2>
-                  <p className="text-slate-500">Tap a node to refine the product in that direction.</p>
+                  <h2 className="text-2xl font-bold mb-2 text-indigo-400">Exploration Map</h2>
+                  <p className="text-slate-500">
+                    {ideaHistory.length === 1
+                      ? "Click a node to explore that direction"
+                      : `${ideaHistory.length} ideas explored`}
+                  </p>
                 </div>
-                <MindMap data={result} onPivot={handlePivot} />
+                <MindMap history={ideaHistory} onPivot={handlePivot} />
               </div>
             )}
           </div>
