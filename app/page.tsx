@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Lightbulb,
   Users,
@@ -12,6 +12,7 @@ import {
   Loader2
 } from "lucide-react";
 import clsx from "clsx";
+import MindMap from "./mindmap";
 
 interface analysisResult {
   product: string;
@@ -20,6 +21,7 @@ interface analysisResult {
   mvp: string;
   not_feature: string;
   next_step: string;
+  pivots: { label: string; description: string }[];
 }
 
 export default function HomePage() {
@@ -28,28 +30,39 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleAnalyze = async () => {
-    if (!input.trim()) return;
+  const handleAnalyze = async (overrideInput?: string) => {
+    // Determine which input to use: overrides take precedence, then state
+    // If it's an event (from button click), overrideInput is an object, so ignore it
+    const textToAnalyze = (typeof overrideInput === 'string' && overrideInput)
+      ? overrideInput
+      : input;
+
+    if (!textToAnalyze.trim()) return;
 
     setLoading(true);
-    setResult(null);
+    // Don't clear result immediately if refining, but for now let's clear to show loading state clearly
+    // setResult(null); 
     setError("");
 
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input }),
+        body: JSON.stringify({ input: textToAnalyze }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         try {
-          // Clean up markdown code blocks if they exist despite instruction
           const cleanJson = data.result.replace(/```json/g, "").replace(/```/g, "").trim();
           const parsed = JSON.parse(cleanJson);
           setResult(parsed);
+
+          // If this was a refinement, update the input box to match what we analyzed
+          if (typeof overrideInput === 'string') {
+            setInput(overrideInput);
+          }
         } catch (e) {
           console.error("JSON Parse Error", e);
           setError("Failed to parse the idea. Try again.");
@@ -64,6 +77,12 @@ export default function HomePage() {
       setLoading(false);
     }
   };
+
+  const handlePivot = useCallback((newPrompt: string) => {
+    handleAnalyze(newPrompt);
+    // Scroll to top smoothly to show loading/results
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30">
@@ -101,7 +120,7 @@ export default function HomePage() {
                 {input.length > 0 ? `${input.length} chars` : "Paste your thought"}
               </span>
               <button
-                onClick={handleAnalyze}
+                onClick={() => handleAnalyze()}
                 disabled={loading || !input.trim()}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
               >
@@ -121,75 +140,86 @@ export default function HomePage() {
 
         {/* Results Grid */}
         {result && (
-          <div className="w-full mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-
-            {/* 1. The Product (Featured) */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-gradient-to-br from-slate-900 to-slate-900 border border-indigo-500/30 rounded-2xl p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-32 bg-indigo-500/5 blur-3xl rounded-full" />
-              <div className="flex items-start gap-4 relative z-10">
-                <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
-                  <Lightbulb className="w-8 h-8" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-indigo-400 uppercase tracking-widest mb-1">The Product</h2>
-                  <div className="text-3xl font-bold text-white leading-tight">
-                    {result.product}
+          <div className="w-full mt-20 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* 1. The Product (Featured) */}
+              <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-gradient-to-br from-slate-900 to-slate-900 border border-indigo-500/30 rounded-2xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-32 bg-indigo-500/5 blur-3xl rounded-full" />
+                <div className="flex items-start gap-4 relative z-10">
+                  <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
+                    <Lightbulb className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-indigo-400 uppercase tracking-widest mb-1">The Product</h2>
+                    <div className="text-3xl font-bold text-white leading-tight">
+                      {result.product}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* 2. Audience */}
+              <Card
+                icon={<Users className="w-5 h-5" />}
+                title="Who It's For"
+                color="text-blue-400"
+                bg="bg-blue-400/10"
+              >
+                {result.audience}
+              </Card>
+
+              {/* 3. Problem */}
+              <Card
+                icon={<AlertTriangle className="w-5 h-5" />}
+                title="The Real Problem"
+                color="text-amber-400"
+                bg="bg-amber-400/10"
+              >
+                {result.problem}
+              </Card>
+
+              {/* 4. MVP (Simple) */}
+              <Card
+                icon={<Box className="w-5 h-5" />}
+                title="Simplest Version"
+                color="text-emerald-400"
+                bg="bg-emerald-400/10"
+              >
+                {result.mvp}
+              </Card>
+
+              {/* 5. Anti-Feature */}
+              <Card
+                icon={<XCircle className="w-5 h-5" />}
+                title="What This Is Not"
+                color="text-rose-400"
+                bg="bg-rose-400/10"
+              >
+                {result.not_feature}
+              </Card>
+
+              {/* 6. Next Step */}
+              <Card
+                icon={<ArrowRight className="w-5 h-5" />}
+                title="Next Monday Morning"
+                color="text-slate-100"
+                bg="bg-slate-700/50"
+                className="md:col-span-2 lg:col-span-1 border-slate-600"
+              >
+                {result.next_step}
+              </Card>
             </div>
 
-            {/* 2. Audience */}
-            <Card
-              icon={<Users className="w-5 h-5" />}
-              title="Who It's For"
-              color="text-blue-400"
-              bg="bg-blue-400/10"
-            >
-              {result.audience}
-            </Card>
-
-            {/* 3. Problem */}
-            <Card
-              icon={<AlertTriangle className="w-5 h-5" />}
-              title="The Real Problem"
-              color="text-amber-400"
-              bg="bg-amber-400/10"
-            >
-              {result.problem}
-            </Card>
-
-            {/* 4. MVP (Simple) */}
-            <Card
-              icon={<Box className="w-5 h-5" />}
-              title="Simplest Version"
-              color="text-emerald-400"
-              bg="bg-emerald-400/10"
-            >
-              {result.mvp}
-            </Card>
-
-            {/* 5. Anti-Feature */}
-            <Card
-              icon={<XCircle className="w-5 h-5" />}
-              title="What This Is Not"
-              color="text-rose-400"
-              bg="bg-rose-400/10"
-            >
-              {result.not_feature}
-            </Card>
-
-            {/* 6. Next Step */}
-            <Card
-              icon={<ArrowRight className="w-5 h-5" />}
-              title="Next Monday Morning"
-              color="text-slate-100"
-              bg="bg-slate-700/50"
-              className="md:col-span-2 lg:col-span-1 border-slate-600"
-            >
-              {result.next_step}
-            </Card>
-
+            {/* Mind Map for Pivots */}
+            {result.pivots && result.pivots.length > 0 && (
+              <div className="w-full mt-16 pt-16 border-t border-slate-900">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-bold mb-2 text-indigo-400">Explore Pivots</h2>
+                  <p className="text-slate-500">Tap a node to refine the product in that direction.</p>
+                </div>
+                <MindMap data={result} onPivot={handlePivot} />
+              </div>
+            )}
           </div>
         )}
 

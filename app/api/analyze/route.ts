@@ -37,7 +37,13 @@ Output strictly in valid JSON format with these keys:
   "problem": "The Real Problem",
   "mvp": "The Simplest Version",
   "not_feature": "What This Is Not",
-  "next_step": "A Realistic Next Step"
+  "next_step": "A Realistic Next Step",
+  "pivots": [
+    { "label": "B2B", "description": "How this works for businesses" },
+    { "label": "Community", "description": "How to make this social" },
+    { "label": "Micro", "description": "An even simpler version" },
+    { "label": "Premium", "description": "A luxury/high-end version" }
+  ]
 }
 Do not use Markdown formatting (like json code blocks), just return the raw JSON string.
 `;
