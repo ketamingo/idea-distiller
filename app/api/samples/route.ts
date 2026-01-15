@@ -11,31 +11,30 @@ export async function GET() {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const themes = [
-            "Architecture", "Fine Dining", "Space Travel", "Obsolete Technology",
-            "Cyber-security", "Street Art", "Quietness", "Legacy Hardware",
-            "Deep Sea Exploration", "Micro-gardening", "Extreme Sports", "Typefaces",
-            "Analog Photography", "Social Etiquette", "Urban Wildlife", "Carpentry",
-            "Fermentation", "Mental Health", "Public Transportation", "Bespoke Clothing",
-            "Vintage Watches", "Paper Stationery", "Birdwatching", "Rare Spices"
+            "Grocery Shopping", "Subscription Fatigue", "Home Maintenance", "Streaming Services",
+            "Cooking & Kitchen", "Fitness & Gym", "Social Life", "Gardening",
+            "Personal Finance", "Cleaning & Organization", "Pet Care", "Transportation",
+            "Work-Life Balance", "Sleep & Rest", "Tech Clutter", "Gift Giving",
+            "Laundry & Clothes", "Hobbies & Crafting", "Coffee & Cafes", "Mobile Apps"
         ];
 
-        // Pick 3 random themes to steer the AI for this batch
-        const selectedThemes = themes.sort(() => 0.5 - Math.random()).slice(0, 3).join(", ");
+        // Pick 4 random themes to steer the AI for this batch
+        const selectedThemes = themes.sort(() => 0.5 - Math.random()).slice(0, 4).join(", ");
 
         const prompt = `
-Generate a list of 5 extremely unique, and realistic "frustrations" or "vague observations" that could lead to a great product.
+Generate a list of 5 relatable, realistic, and slightly annoying "frustrations" or "vague observations" that occur in everyday life.
 
-Explore these specific themes for this batch: ${selectedThemes}.
+Focus on these specific themes for this batch: ${selectedThemes}.
 
 Rules:
 - Each item must be a single sentence.
-- First-person perspective ("I wish...", "I hate...", "There's no way to...").
-- AVOID cliches (no "lost keys", "water plants", or "AI aggregators").
-- Focus on weird, niche, or overlooked moments in modern life, design, or specialized hobbies.
-- Be specific, evocative, and diverse.
+- First-person perspective ("I wish...", "I hate...", "I'm tired of...").
+- BE RELATABLE: Focus on common, modern annoyances that most people experience (e.g., forgetting things, subscription confusion, small home inconveniences).
+- Be specific and evocative.
+- Ensure the tone is authentic and slightly frustrated, but not aggressive.
 
 Return ONLY a JSON array of strings. No markdown, no numbering.
-Example: ["I wish my desk would tell me if it's level...", "I hate that I can't find recordings of specific forests..."]
+Example: ["I wish I could remember which freezer drawer has the ice cream...", "I'm tired of my phone notifications interrupting my focus for things I don't care about."]
 `;
 
         const result = await model.generateContent({

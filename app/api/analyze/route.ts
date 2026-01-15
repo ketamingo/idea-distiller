@@ -15,16 +15,16 @@ export async function POST(req: Request) {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const persona = mode === "executive"
-            ? "strategic, high-level business consultant. focus on ROI, competitive moats, and market scalability."
+            ? "strategic, high-level Fortune 500 business consultant and venture capitalist. Your analysis is extremely thorough, rigorous, and covers multiple dimensions of business strategy, market dynamics, and operational feasibility."
             : mode === "pro"
-                ? "highly technical, hands-on product architect. focus on implementation details, tech stacks, and edge cases."
-                : "brilliant, non-conformist product strategist. focus on unique insights and creative, human-scale solutions.";
+                ? "highly technical lead product architect and startup CTO. Your analysis is deep, technical, and focuses on the 'how' - including engineering challenges, data architecture, and precise feature sets."
+                : "creative, non-conformist product scout. Your analysis is punchy, high-level, and focused on the core 'aha!' moment and human behavior.";
 
-        let instruction = "Extract the most unique, high-signal product idea hiding inside a vague thought.";
+        let instruction = "Distill the most provocative and viable product concept from the input.";
 
         if (fieldToRegenerate && currentIdea) {
             instruction = `I have this current product idea: ${JSON.stringify(currentIdea)}. 
-            Please REGENERATE ONLY the "${fieldToRegenerate}" field. Make it significantly DIFFERENT and more interesting/radical than the current one, but keep it consistent with the rest of the idea.`;
+            Please REGENERATE ONLY the "${fieldToRegenerate}" field. Keep it consistent with the overall concept but make it significantly more detailed and relevant to the selected ${mode} mode.`;
         }
 
         const prompt = `
@@ -32,34 +32,29 @@ You are a ${persona}
 
 ${instruction}
 
-Rules:
-- AVOID generic solutions (no "AI summaries", "standard dashboards", or "generalized productivity apps").
-- BE SPECIFIC: Find a niche, narrow execution that feels inevitable once mentioned.
-- Do NOT hype the idea, but make it intellectually interesting.
-- Favor products that leverage a secret insight or overlooked behavior.
-- Use a tone appropriate for the ${mode} mode selected.
+GENERAL RULES:
+- AVOID generic solutions. No standard dashboards or "AI for X".
+- BE SPECIFIC: Find a niche, narrow execution that feels like a "secret" being shared.
+- Do NOT hype; use a calm, authoritative, intellectually honest tone.
 
-Mode-Specific Guidelines:
-- Simple: Keep language plain, focus on the core "magic" moment.
-- Pro: Include technical jargon, specific database/API suggestions in the MVP.
-- Executive: Frame the problem and solution in terms of opportunity cost and strategic value.
+DEPTH REQUIREMENTS PER MODE:
+- Mode "simple": Provide high-level, concise snippets. Each field should be 1-2 powerful sentences max. Focus on clarity.
+- Mode "pro": Provide significantly more depth (3-5 sentences per field). Include specific technical terminology, stack suggestions, and edge-case considerations.
+- Mode "executive": Provide MAXIMUM depth and rigor. Each field should be a detailed paragraph (6-10 sentences). Analyze market defensibility, ROI potential, scalability friction, and strategic alignment. This should feel like a deep-dive briefing.
 
-Pivot Variety:
-Provide 4 distinct paths. Ensure one is "Analog/Physical", one is "Hyper-Niche", one is "Luxury/Premium", and one is "Viral/Social". 
-
-Input:
-${input}
+Input Thought:
+"${input}"
 
 Return a JSON object with this schema:
 {
-  "product": "Unique name and one-sentence description",
-  "audience": "The exact group that would pay for this",
-  "problem": "The hidden, painful truth behind the observation",
-  "mvp": "An elegant, mode-appropriate proof of concept",
+  "product": "Unique name and mode-appropriate description (brief for simple, detailed for others)",
+  "audience": "Description of the exact niche or persona",
+  "problem": "Deep analysis of the underlying pain point",
+  "mvp": "Specific, mode-appropriate proof of concept details",
   "not_feature": "A common but wrong direction this product explicitly REJECTS",
-  "next_step": "A high-signal validation task",
+  "next_step": "A concrete, high-signal validation task",
   "pivots": [
-    { "label": "Short Bold Label", "description": "A radically different but plausible direction" }
+    { "label": "Label", "description": "Mode-appropriate depth description of a pivot" }
   ]
 }
 `;

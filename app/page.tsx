@@ -14,10 +14,15 @@ import {
   Share2,
   Check,
   RefreshCw,
-  RotateCcw
+  RotateCcw,
+  Lock,
+  Mail,
+  User,
+  LogOut
 } from "lucide-react";
 import clsx from "clsx";
 import MindMap from "./mindmap";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AnalysisResult {
   product: string;
@@ -43,21 +48,19 @@ interface IdeaNode {
 }
 
 const SAMPLE_IDEAS = [
+  "I hate that I have to recreate my grocery list manually every week even though I buy the same 20 things.",
+  "I wish I could see which streaming service has the movie I want without checking five different apps.",
+  "I'm tired of forgetting my reusable grocery bags in the car every single time I walk into the store.",
+  "There's no easy way to know if a coffee shop has an available outlet before I walk there with my laptop.",
+  "I wish I could find anything in my overflowing kitchen junk drawer without emptying the whole thing.",
+  "I hate that I can't easily find a quiet place for a 10-minute nap in the city.",
+  "I wish my smoke alarm had a 'searing steak' button to mute it for exactly 10 minutes.",
+  "I constantly lose my physical gym membership card but carrying it is annoying.",
+  "Managing digital subscriptions is basically a second full-time job at this point.",
+  "Extracting data from messy PDFs is a nightmare every single time.",
+  "I want to track how many hours of deep sleep I get without wearing a watch.",
   "I hate correcting typos in my git commit messages.",
   "I constantly forget to water my plants and they keep dying.",
-  "I wish I could find all the specific tools I used for a DIY project in one receipt.",
-  "Finding a good spot for stargazing without light pollution is impossible.",
-  "I always lose my physical gym membership card but carrying it is annoying.",
-  "I struggle to find healthy lunch spots within walking distance of my office.",
-  "Extracting data from PDFs is a nightmare every single time.",
-  "I want to track how many hours of deep sleep I get without wearing a watch.",
-  "Setting up a personal blog takes too much technical configuration.",
-  "I wish I could easily see which ingredients in my pantry are about to expire.",
-  "I have 50 tabs open of articles I'll never read.",
-  "There's no easy way to gift a 'day of work' to a freelancer friend.",
-  "Every time I hear a cool bird I wish I knew what it was without pulling out my phone.",
-  "I want a way to track the 'vibe' of local cafes without reading 100 Yelp reviews.",
-  "Managing subscriptions is basically a second full-time job at this point.",
   "I wish my kitchen scale would automatically log calories to my phone.",
   "There's no 'Shazam' for physical textures or fabrics.",
   "I hate that I can't easily find out if a movie has jump scares before watching.",
@@ -144,11 +147,6 @@ const SAMPLE_IDEAS = [
   "I hate that I can't easily find a place to do 'experimental' cooking with specialized gear.",
   "I wish I could join a 'book club' that only meets in person to discuss one specific page.",
   "I want to know the 'waiting room vibe' of a doctor's office before I book.",
-  "I hate that I can't easily see which of my friends are also currently 'unproductive'.",
-  "I wish I could find a 'mentor' who will only talk to me via physical letters.",
-  "I want to track how many times I've actually used my 'fancy' dinner plates.",
-  "There's no app for 'un-learning'—it blocks your knowledge of a specific topic for a day.",
-  "I wish I could see the 'shadow history' of a park—what used to be there 100 years ago.",
   "I hate that I can't easily find a place to fix a broken antique clock.",
   "I want to buy a 'mystery ticket' that puts me on the next available train to anywhere.",
   "I wish my phone would only recharge if I completed a 15-minute specialized workout.",
@@ -196,6 +194,24 @@ const SAMPLE_IDEAS = [
   "I want to swap 'useless facts' with people to see who knows the most obscure trivia."
 ];
 
+const MODE_FEATURES = {
+  simple: {
+    label: "Concise & Fast",
+    description: "Perfect for quick validation of the core idea.",
+    features: ["Punchy 1-2 sentence insights", "Focus on core 'aha' moment", "High-level concept distillation"]
+  },
+  pro: {
+    label: "Technical Deep-Dive",
+    description: "Detailed architecture and engineering patterns.",
+    features: ["In-depth technical analysis (3-5 sentences)", "Suggested tech stack & database schema", "Engineering edge-case considerations", "Unlocked Exploration Map"]
+  },
+  executive: {
+    label: "Strategic Briefing",
+    description: "Maximum rigor for business and market feasibility.",
+    features: ["Detailed strategic paragraphs (6-10 sentences)", "Market defensibility & ROI analysis", "Unit economics & scalability friction", "Competitive moat identification"]
+  }
+};
+
 export default function HomePage() {
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<"simple" | "pro" | "executive">("simple");
@@ -203,6 +219,32 @@ export default function HomePage() {
   const [dynamicSamples, setDynamicSamples] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [placeholder, setPlaceholder] = useState("e.g. I hate correcting typos...");
+
+  const isPro = !!user;
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authEmail.includes("@")) {
+      setUser({ email: authEmail });
+      setShowAuthModal(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setMode("simple");
+  };
+
+  // Auto-seed a random placeholder on refresh
+  useEffect(() => {
+    const allSamples = [...SAMPLE_IDEAS, ...dynamicSamples];
+    const randomIdea = allSamples[Math.floor(Math.random() * allSamples.length)];
+    setPlaceholder(`e.g. ${randomIdea}`);
+  }, [dynamicSamples.length]); // Re-run if we get more samples
 
   // Fetch a new unique sample on every visit to "grow" the database
   useEffect(() => {
@@ -236,6 +278,12 @@ export default function HomePage() {
       : input;
 
     if (!textToAnalyze.trim()) return;
+
+    // Gating check for Pro/Executive modes
+    if (mode !== "simple" && !isPro) {
+      setShowAuthModal(true);
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -284,7 +332,7 @@ export default function HomePage() {
   const handlePivot = useCallback((newPrompt: string, parentId: string) => {
     handleAnalyze(newPrompt, parentId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [mode, isPro]); // Added isPro to ensure latest handleAnalyze is used
 
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
@@ -309,6 +357,12 @@ Generated by Idea Distiller
 
   const handleRefreshField = async (field: string) => {
     if (!currentResult || loading || refreshingField) return;
+
+    if (mode !== "simple" && !isPro) {
+      setShowAuthModal(true);
+      return;
+    }
+
     setRefreshingField(field);
     try {
       const res = await fetch("/api/analyze", {
@@ -356,14 +410,72 @@ Generated by Idea Distiller
   const currentResult = ideaHistory.length > 0 ? ideaHistory[ideaHistory.length - 1] : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30">
-      <div className="max-w-5xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30 overflow-x-hidden relative">
+      {/* Background Blobs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            x: [0, 100, 0],
+            y: [0, -50, 0],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px]"
+        />
+        <motion.div
+          animate={{
+            x: [0, -100, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute top-[20%] -right-[10%] w-[35%] h-[35%] bg-rose-500/10 rounded-full blur-[120px]"
+        />
+        <motion.div
+          animate={{
+            x: [0, 50, 0],
+            y: [0, 150, 0],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] bg-emerald-500/5 rounded-full blur-[120px]"
+        />
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center relative z-10 transition-all duration-1000">
+
+        {/* User Profile / Login */}
+        <div className="w-full flex justify-end mb-8">
+          {user ? (
+            <div className="flex items-center gap-4 bg-slate-900/50 border border-slate-800 px-4 py-2 rounded-full backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-[10px] font-bold">
+                  {user.email[0].toUpperCase()}
+                </div>
+                <span className="text-xs text-slate-400 font-medium">{user.email}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-slate-500 hover:text-white transition-colors"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="flex items-center gap-2 px-6 py-2 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 rounded-full text-sm font-semibold text-indigo-400 transition-all"
+            >
+              <User className="w-4 h-4" />
+              Login for Pro Features
+            </button>
+          )}
+        </div>
 
         {/* Header */}
-        <header className="text-center mb-12 max-w-2xl relative">
-          <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <motion.header
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12 max-w-2xl relative"
+        >
           <div className="inline-flex items-center justify-center p-2 mb-4 bg-slate-900/50 rounded-full border border-slate-800 backdrop-blur-sm">
             <Sparkles className="w-4 h-4 text-indigo-400 mr-2" />
             <span className="text-xs font-medium text-slate-400 uppercase tracking-widest">Idea Distiller</span>
@@ -374,31 +486,64 @@ Generated by Idea Distiller
           <p className="text-lg text-slate-400 leading-relaxed">
             Turn your frustrated observations into concrete, solo-founder-ready product concepts.
           </p>
-        </header>
+        </motion.header>
 
         {/* Input Area */}
-        <div className="w-full max-w-2xl relative group z-10">
-          <div className="flex gap-2 mb-4 justify-center">
-            {(["simple", "pro", "executive"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={clsx(
-                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all border",
-                  mode === m
-                    ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-                    : "bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700"
-                )}
-              >
-                {m}
-              </button>
-            ))}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-full max-w-2xl relative group z-10"
+        >
+          <div className="flex gap-2 mb-4 justify-center relative z-20">
+            {(["simple", "pro", "executive"] as const).map((m) => {
+              const locked = (m === "pro" || m === "executive") && !isPro;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  className={clsx(
+                    "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2",
+                    mode === m
+                      ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                      : "bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700"
+                  )}
+                >
+                  {locked && <Lock className="w-3 h-3 text-slate-600" />}
+                  {m}
+                </button>
+              );
+            })}
           </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={mode}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="mb-6 bg-slate-900/40 border border-slate-800/50 rounded-2xl p-4 backdrop-blur-sm text-center"
+            >
+              <div className="text-indigo-400 text-xs font-bold uppercase tracking-widest mb-1">
+                {MODE_FEATURES[mode].label}
+              </div>
+              <p className="text-slate-400 text-sm mb-3">{MODE_FEATURES[mode].description}</p>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                {MODE_FEATURES[mode].features.map((f, i) => (
+                  <div key={i} className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                    <Check className="w-3 h-3 text-emerald-500/50" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
           <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-rose-500 rounded-xl opacity-20 group-hover:opacity-30 transition duration-500 blur-lg"></div>
           <div className="relative bg-slate-900 border border-slate-800 rounded-xl p-2 shadow-2xl">
             <textarea
               className="w-full h-32 bg-transparent text-lg p-4 focus:outline-none resize-none placeholder-slate-600"
-              placeholder="e.g. I hate correcting typos in my git commit messages..."
+              placeholder={placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
@@ -426,7 +571,7 @@ Generated by Idea Distiller
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {error && (
           <div className="mt-8 p-4 bg-red-950/30 border border-red-900/50 rounded-lg text-red-200 flex items-center gap-3">
@@ -437,10 +582,29 @@ Generated by Idea Distiller
 
         {/* Results Grid - Show latest result */}
         {currentResult && (
-          <div className="w-full mt-20 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.1
+                }
+              }
+            }}
+            className="w-full mt-20"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* 1. The Product (Featured) */}
-              <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-gradient-to-br from-slate-900 to-slate-900 border border-indigo-500/30 rounded-2xl p-8 relative overflow-hidden">
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+                className="col-span-1 md:col-span-2 lg:col-span-3 bg-gradient-to-br from-slate-900 to-slate-900 border border-indigo-500/30 rounded-2xl p-8 relative overflow-hidden"
+              >
                 <div className="absolute top-0 right-0 p-32 bg-indigo-500/5 blur-3xl rounded-full" />
                 <div className="flex items-start justify-between relative z-10 w-full">
                   <div className="flex items-start gap-4">
@@ -474,91 +638,190 @@ Generated by Idea Distiller
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* 2. Audience */}
-              <Card
-                icon={<Users className="w-5 h-5" />}
-                title="Who It's For"
-                color="text-blue-400"
-                bg="bg-blue-400/10"
-                onRefresh={() => handleRefreshField('audience')}
-                loading={refreshingField === 'audience'}
-              >
-                {currentResult.audience}
-              </Card>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <Card
+                  icon={<Users className="w-5 h-5" />}
+                  title="Who It's For"
+                  color="text-blue-400"
+                  bg="bg-blue-400/10"
+                  onRefresh={() => handleRefreshField('audience')}
+                  loading={refreshingField === 'audience'}
+                >
+                  {currentResult.audience}
+                </Card>
+              </motion.div>
 
               {/* 3. Problem */}
-              <Card
-                icon={<AlertTriangle className="w-5 h-5" />}
-                title="The Real Problem"
-                color="text-amber-400"
-                bg="bg-amber-400/10"
-                onRefresh={() => handleRefreshField('problem')}
-                loading={refreshingField === 'problem'}
-              >
-                {currentResult.problem}
-              </Card>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <Card
+                  icon={<AlertTriangle className="w-5 h-5" />}
+                  title="The Real Problem"
+                  color="text-amber-400"
+                  bg="bg-amber-400/10"
+                  onRefresh={() => handleRefreshField('problem')}
+                  loading={refreshingField === 'problem'}
+                >
+                  {currentResult.problem}
+                </Card>
+              </motion.div>
 
               {/* 4. MVP (Simple) */}
-              <Card
-                icon={<Box className="w-5 h-5" />}
-                title="Simplest Version"
-                color="text-emerald-400"
-                bg="bg-emerald-400/10"
-                onRefresh={() => handleRefreshField('mvp')}
-                loading={refreshingField === 'mvp'}
-              >
-                {currentResult.mvp}
-              </Card>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <Card
+                  icon={<Box className="w-5 h-5" />}
+                  title="Simplest Version"
+                  color="text-emerald-400"
+                  bg="bg-emerald-400/10"
+                  onRefresh={() => handleRefreshField('mvp')}
+                  loading={refreshingField === 'mvp'}
+                >
+                  {currentResult.mvp}
+                </Card>
+              </motion.div>
 
               {/* 5. Anti-Feature */}
-              <Card
-                icon={<XCircle className="w-5 h-5" />}
-                title="What This Is Not"
-                color="text-rose-400"
-                bg="bg-rose-400/10"
-                onRefresh={() => handleRefreshField('not_feature')}
-                loading={refreshingField === 'not_feature'}
-              >
-                {currentResult.not_feature}
-              </Card>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <Card
+                  icon={<XCircle className="w-5 h-5" />}
+                  title="What This Is Not"
+                  color="text-rose-400"
+                  bg="bg-rose-400/10"
+                  onRefresh={() => handleRefreshField('not_feature')}
+                  loading={refreshingField === 'not_feature'}
+                >
+                  {currentResult.not_feature}
+                </Card>
+              </motion.div>
 
               {/* 6. Next Step */}
-              <Card
-                icon={<ArrowRight className="w-5 h-5" />}
-                title="Next Monday Morning"
-                color="text-slate-100"
-                bg="bg-slate-700/50"
-                className="md:col-span-2 lg:col-span-1 border-slate-600"
-                onRefresh={() => handleRefreshField('next_step')}
-                loading={refreshingField === 'next_step'}
-              >
-                {currentResult.next_step}
-              </Card>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <Card
+                  icon={<ArrowRight className="w-5 h-5" />}
+                  title="Next Monday Morning"
+                  color="text-slate-100"
+                  bg="bg-slate-700/50"
+                  className="md:col-span-2 lg:col-span-1 border-slate-600"
+                  onRefresh={() => handleRefreshField('next_step')}
+                  loading={refreshingField === 'next_step'}
+                >
+                  {currentResult.next_step}
+                </Card>
+              </motion.div>
             </div>
 
             {/* Mind Map for Exploration History */}
             {ideaHistory.length > 0 && (
-              <div className="w-full mt-16 pt-16 border-t border-slate-900">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold mb-2 text-indigo-400">Exploration Map</h2>
-                  <p className="text-slate-500">
-                    {ideaHistory.length === 1
-                      ? "Click a node to explore that direction"
-                      : `${ideaHistory.length} ideas explored`}
-                  </p>
+              <div className="w-full mt-16 pt-16 border-t border-slate-900 relative">
+                {!isPro && (
+                  <div className="absolute inset-x-0 inset-y-0 z-50 flex items-center justify-center backdrop-blur-md bg-slate-950/40 rounded-3xl mt-16">
+                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl text-center max-w-xs transition-transform hover:scale-105">
+                      <div className="inline-flex p-3 bg-indigo-500/20 rounded-xl text-indigo-400 mb-4">
+                        <Lock className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">Exploration Map</h3>
+                      <p className="text-slate-400 text-sm mb-6">
+                        Unlock the visual idea tree and pivot exploration history with a Pro account.
+                      </p>
+                      <button
+                        onClick={() => setShowAuthModal(true)}
+                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-sm transition-all"
+                      >
+                        Login to Unlock
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className={clsx("transition-opacity duration-1000", !isPro && "opacity-20 blur-sm pointer-events-none")}>
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold mb-2 text-indigo-400">Exploration Map</h2>
+                    <p className="text-slate-500">
+                      {ideaHistory.length === 1
+                        ? "Click a node to explore that direction"
+                        : `${ideaHistory.length} ideas explored`}
+                    </p>
+                  </div>
+                  <MindMap history={ideaHistory} onPivot={handlePivot} />
                 </div>
-                <MindMap history={ideaHistory} onPivot={handlePivot} />
               </div>
             )}
-          </div>
+          </motion.div>
         )}
 
-        <footer className="mt-24 text-slate-600 text-sm py-6 border-t border-slate-900 w-full text-center">
-          built for people with too many ideas
+        <footer className="mt-24 py-12 border-t border-slate-900/50 w-full text-center">
+          <p className="text-white font-bold tracking-tight text-lg">
+            Made for people with too many ideas
+          </p>
         </footer>
       </div>
+
+      {/* Auth Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAuthModal(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl"
+            >
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() => setShowAuthModal(false)}
+                  className="p-2 text-slate-500 hover:text-white transition-colors"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="text-center mb-8">
+                <div className="inline-flex p-4 bg-indigo-500/10 rounded-2xl text-indigo-400 mb-4 shadow-inner">
+                  <Mail className="w-8 h-8" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Upgrade Your Ideas</h2>
+                <p className="text-slate-400 text-sm">
+                  Login with email to access **Pro** and **Executive** modes, and the interactive **Exploration Map**.
+                </p>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Email Address</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-indigo-400 transition-colors" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 transform active:scale-[0.98] transition-all"
+                >
+                  Access Premium Features
+                </button>
+                <p className="text-[10px] text-center text-slate-600 uppercase tracking-tighter">
+                  No password required. Just your spark.
+                </p>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -583,7 +846,7 @@ function Card({
   loading?: boolean;
 }) {
   return (
-    <div className={clsx("p-6 bg-slate-900 border border-slate-800 rounded-2xl group relative", className)}>
+    <div className={clsx("p-6 bg-slate-900 border border-slate-800 rounded-2xl group relative h-full", className)}>
       <div className="flex justify-between items-start mb-4">
         <div className={clsx("p-2 rounded-lg", bg, color)}>
           {icon}
